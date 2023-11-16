@@ -33,12 +33,17 @@ app.use(bodyParser.json());
 
 
 app.get("/", (req, res) => {
-    res.sendFile(__dirname + "/pages/index.html");
+    res.json({"index" : "index"});
 })
 
 app.post("/register", async (req, res) => {
     try{
         const {name, email, password } = req.body;
+
+        
+        if(!name || !email || !password){
+            return res.json({status : "error", error : "Invalid input"})
+        }
 
         const existingUser = await Registration.findOne({email : email});
         if(!existingUser){
@@ -48,26 +53,18 @@ app.post("/register", async (req, res) => {
                 password
             });
             await registrationData.save();
-            res.redirect("/success");
+            res.json({status : "ok"})
         }
         else { 
-            alert("User already exist");
-            res.redirect("/error");
+            res.json({status : "error", error : "Email already in use"})
         }
         
     }
 
     catch (error) {
         console.log(error)
-        res.redirect("/error")
+        res.json({status : "error", error : "Server error"})
     }
-})
-
-app.get("/success", (req, res) =>{
-    res.sendFile (__dirname+"pages/success.html");
-})
-app.get("/error", (req, res) =>{
-    res.sendFile(__dirname+"/pages/error.html");
 })
 
 app.listen(port, ()=>{
